@@ -158,13 +158,13 @@ wss.on('connection', ws => {
                 const peer = clientRole.get(ws) === 'host' ? rooms[code].guest : rooms[code].host;
                 if (peer && peer.readyState === WebSocket.OPEN) send(peer, msg);
                 break;
-				case 'reaction': {
-    const code = clientRoom.get(ws);
-    if (!code || !rooms[code]) return;
-    const peer = clientRole.get(ws) === 'host' ? rooms[code].guest : rooms[code].host;
-    if (peer && peer.readyState === WebSocket.OPEN) send(peer, msg);
-    break;
-}
+            }
+            case 'reaction': {
+                const code = clientRoom.get(ws);
+                if (!code || !rooms[code]) return;
+                const peer = clientRole.get(ws) === 'host' ? rooms[code].guest : rooms[code].host;
+                if (peer && peer.readyState === WebSocket.OPEN) send(peer, msg);
+                break;
             }
 
             case 'reaction': {
