@@ -84,8 +84,6 @@ wss.on('connection', ws => {
                         if (room.guest && room.guest.readyState === WebSocket.OPEN) {
                             send(ws,       { type: 'peer_connected' });
                             send(room.guest, { type: 'peer_connected' });
-                            // Renvoyer le dernier état de jeu à l'hôte
-                            if (room.gameState) send(ws, { type: 'game_state', ...JSON.parse(room.gameState) });
                         }
                         return;
                     }
