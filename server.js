@@ -118,7 +118,7 @@ wss.on('connection', ws => {
 					send(ws, { type: 'room_created', roomCode: code, reconnected: true });
 					if (room.guest && room.guest.readyState === WebSocket.OPEN) {
 						send(ws, { type: 'peer_connected' });
-						send(room.guest, { type: 'peer_connected' });
+						send(room.guest, { type: 'peer_connected', hostReconnected: true });
 						if (room.gameState) send(ws, { type: 'game_state', ...JSON.parse(room.gameState) });
 					}
 					return;
