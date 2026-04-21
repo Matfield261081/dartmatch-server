@@ -117,10 +117,23 @@ wss.on('connection', ws => {
 					clientRole.set(ws, 'host');
 					send(ws, { type: 'room_created', roomCode: code, reconnected: true });
 					if (room.guest && room.guest.readyState === WebSocket.OPEN) {
-						send(ws, { type: 'peer_connected' });
-						send(room.guest, { type: 'peer_connected', hostReconnected: true });
-						if (room.gameState) send(ws, { type: 'game_state', ...JSON.parse(room.gameState) });
+					send(room.guest, { type: 'peer_connected', hostReconnected: true });
+					if (room.gameState) {
+						const gs = JSON.parse(room.gameState);
+						const inverted = {
+							...gs,
+							localScore:  gs.remoteScore,
+							remoteScore: gs.localScore,
+							localEnds:   gs.remoteEnds,
+							remoteEnds:  gs.localEnds,
+							localMarks:  gs.remoteMarks,
+							remoteMarks: gs.localMarks,
+							currentLocal: !gs.currentLocal
+						};
+						send(ws, { type: 'game_state', ...inverted });
 					}
+					send(ws, { type: 'peer_connected' });
+				}
 					return;
 				}
 				const guestGone = !room.guest || room.guest.readyState !== WebSocket.OPEN;
