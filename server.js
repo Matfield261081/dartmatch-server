@@ -109,11 +109,26 @@ wss.on('connection', ws => {
                 if (!rooms[code]) return send(ws, { type: 'error', message: `Salle "${code}" introuvable. Demandez à l'hôte de recréer la salle.` });
 
                 const room = rooms[code];
-                const guestGone = !room.guest || room.guest.readyState !== WebSocket.OPEN;
-
-                if (!guestGone && room.guest !== ws) {
-                    return send(ws, { type: 'error', message: 'Salle pleine' });
-                }
+                // Vérifier si c'est l'hôte qui tente de rejoindre sa propre salle (reconnexion)
+				const hostGone = !room.host || room.host.readyState !== WebSocket.OPEN;
+				if (hostGone) {
+					// L'hôte se reconnecte via join_room — on le redirige comme un create_room
+					room.host = ws;
+					room.hostDisconnectedAt = null;
+					clientRoom.set(ws, code);
+					clientRole.set(ws, 'host');
+					send(ws, { type: 'room_created', roomCode: code, reconnected: true });
+					if (room.guest && room.guest.readyState === WebSocket.OPEN) {
+						send(ws, { type: 'peer_connected' });
+						send(room.guest, { type: 'peer_connected' });
+						if (room.gameState) send(ws, { type: 'game_state', ...JSON.parse(room.gameState) });
+					}
+					return;
+				}
+				const guestGone = !room.guest || room.guest.readyState !== WebSocket.OPEN;
+				if (!guestGone && room.guest !== ws) {
+					return send(ws, { type: 'error', message: 'Salle pleine' });
+				}
 
                 // Reconnexion ou nouvelle connexion guest
                 const isReconnect = room.guestDisconnectedAt !== null;
